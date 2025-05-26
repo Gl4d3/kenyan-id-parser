@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenyan Document Verification System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+
+        .upload-zone {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .upload-hint {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .document-type-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .radio-group {
+            display: inline-flex;
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .radio-option {
+            position: relative;
+            margin: 0 5px;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .radio-option input:checked + label {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .result-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .warning {
+            color: #ffc107;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #212529;
+            font-family: 'Courier New', monospace;
+        }
+
+        .annotated-images {
+            margin-top: 20px;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .annotated-image {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .annotated-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .radio-option {
+                margin: 2px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-id-card"></i> Document Verification System</h1>
+            <p>Verify Kenyan ID Cards and KRA PIN Certificates with AI-powered analysis</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Click to upload or drag and drop your document</div>
+                    <div class="upload-hint">Supports PNG, JPG, JPEG, GIF, BMP, TIFF, HEIC, HEIF (max 16MB)</div>
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                
+                <div class="document-type-selector">
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="auto" name="documentType" value="auto" checked>
+                            <label for="auto"><i class="fas fa-magic"></i> Auto Detect</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="kenyan_id" name="documentType" value="kenyan_id">
+                            <label for="kenyan_id"><i class="fas fa-id-card"></i> Kenyan ID</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="kra_pin" name="documentType" value="kra_pin">
+                            <label for="kra_pin"><i class="fas fa-certificate"></i> KRA PIN</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" id="verifyBtn" onclick="verifyDocument()" disabled>
+                        <i class="fas fa-search"></i> Verify Document
+                    </button>
+                </div>
+            </div>
+
+            <div id="loadingSection" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing document... Please wait</p>
+            </div>
+
+            <div id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorMessage"></span>
+                </div>
+            </div>
+
+            <div id="resultsSection" class="results-section">
+                <!-- Results will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // File input change handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('verifyBtn').disabled = false;
+                
+                // Update upload zone to show selected file
+                const uploadZone = document.querySelector('.upload-zone');
+                uploadZone.innerHTML = `
+                    <div class="upload-icon">
+                        <i class="fas fa-file-image"></i>
+                    </div>
+                    <div class="upload-text">Selected: ${file.name}</div>
+                    <div class="upload-hint">Click to select a different file</div>
+                `;
+            }
+        });
+
+        // Drag and drop functionality
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#4CAF50';
+            uploadSection.style.background = '#f0f8f0';
+        });
+
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    selectedFile = file;
+                    document.getElementById('fileInput').files = files;
+                    document.getElementById('verifyBtn').disabled = false;
+                    
+                    const uploadZone = document.querySelector('.upload-zone');
+                    uploadZone.innerHTML = `
+                        <div class="upload-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <div class="upload-text">Selected: ${file.name}</div>
+                        <div class="upload-hint">Click to select a different file</div>
+                    `;
+                }
+            }
+        });
+
+        async function verifyDocument() {
+            if (!selectedFile) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const documentType = document.querySelector('input[name="documentType"]:checked').value;
+            
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('verifyBtn').disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('document_type', documentType);
+
+            try {
+                const response = await fetch('/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'An error occurred');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+                document.getElementById('errorSection').style.display = 'block';
+            } finally {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('verifyBtn').disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            let html = '';
+
+            if (data.detected_type) {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <i class="fas fa-robot result-icon warning"></i>
+                            <div>
+                                <h3>Auto-Detection Result</h3>
+                                <p>Detected document type: ${data.detected_type.replace('_', ' ').toUpperCase()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (data.kenyan_id) {
+                html += createKenyanIdCard(data.kenyan_id);
+            }
+
+            if (data.kra_pin) {
+                html += createKraPinCard(data.kra_pin);
+            }
+
+            if (data.annotated_images && data.annotated_images.length > 0) {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <i class="fas fa-image result-icon" style="color: #6f42c1;"></i>
+                            <div>
+                                <h3>Annotated Analysis</h3>
+                                <p>OCR detection results with bounding boxes</p>
+                            </div>
+                        </div>
+                        <div class="annotated-images">
+                            <div class="image-grid">
+                                ${data.annotated_images.map(img => `
+                                    <div class="annotated-image">
+                                        <img src="${img}" alt="Annotated analysis" />
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsSection.innerHTML = html;
+            resultsSection.style.display = 'block';
+        }
+
+        function createKenyanIdCard(data) {
+            const isValid = data.valid_id;
+            const iconClass = isValid ? 'success fas fa-check-circle' : 'error fas fa-times-circle';
+            
+            return `
+                <div class="result-card">
+                    <div class="result-header">
+                        <i class="${iconClass} result-icon"></i>
+                        <div>
+                            <h3>Kenyan ID Verification</h3>
+                            <p>${isValid ? 'Valid Kenyan ID detected' : 'Not a valid Kenyan ID'}</p>
+                        </div>
+                    </div>
+                    ${isValid ? `
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <div class="detail-label">ID Number</div>
+                                <div class="detail-value">${data.id_number || 'Not extracted'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Full Name</div>
+                                <div class="detail-value">${data.name || 'Not extracted'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Document Status</div>
+                                <div class="detail-value">✅ Valid</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function createKraPinCard(data) {
+            const isValid = data.is_valid_document;
+            const iconClass = isValid ? 'success fas fa-check-circle' : 'error fas fa-times-circle';
+            
+            return `
+                <div class="result-card">
+                    <div class="result-header">
+                        <i class="${iconClass} result-icon"></i>
+                        <div>
+                            <h3>KRA PIN Verification</h3>
+                            <p>${data.message}</p>
+                        </div>
+                    </div>
+                    ${isValid ? `
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <div class="detail-label">KRA PIN</div>
+                                <div class="detail-value">${data.kra_pin || 'Not extracted'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Confidence Score</div>
+                                <div class="detail-value">${(data.confidence * 100).toFixed(1)}%</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Document Status</div>
+                                <div class="detail-value">✅ Valid</div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Confidence Score</div>
+                                <div class="detail-value">${(data.confidence * 100).toFixed(1)}%</div>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
