@@ -5,3 +5,4 @@ pillow-heif
 opencv-python
 numpy
 Pillow
+gunicorn
