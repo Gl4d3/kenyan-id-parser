@@ -1,14 +1,16 @@
 Flask==2.3.3
 Werkzeug==2.3.7
-vision-agent
-pillow-heif
 opencv-python
 numpy
+python-magic-bin==0.4.14  # Use this for Windows
 Pillow>=9.0.0
-gunicorn
 pdf2image==1.17.0
 python-docx==1.1.0
-python-magic==0.4.27
 PyPDF2==3.0.1
 
-python-magic-bin==0.4.14  # Use this for Windows
+
+vision-agent
+pillow-heif
+gunicorn
+
+
