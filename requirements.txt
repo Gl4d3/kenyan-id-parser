@@ -4,5 +4,11 @@ vision-agent
 pillow-heif
 opencv-python
 numpy
-Pillow
+Pillow>=9.0.0
 gunicorn
+pdf2image==1.17.0
+python-docx==1.1.0
+python-magic==0.4.27
+PyPDF2==3.0.1
+
+python-magic-bin==0.4.14  # Use this for Windows

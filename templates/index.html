@@ -191,6 +191,10 @@
             color: #ffc107;
         }
 
+        .info {
+            color: #17a2b8;
+        }
+
         .result-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -266,6 +270,30 @@
             border: 1px solid #f5c6cb;
         }
 
+        .file-type-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .pdf-file {
+            background: #dc3545;
+            color: white;
+        }
+
+        .doc-file {
+            background: #007bff;
+            color: white;
+        }
+
+        .image-file {
+            background: #28a745;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -295,7 +323,7 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-id-card"></i> Document Verification System</h1>
-            <p>Verify Kenyan ID Cards and KRA PIN Certificates with AI-powered analysis</p>
+            <p>Verify Kenyan ID Cards and KRA PIN Certificates from images, PDFs, and documents</p>
         </div>
 
         <div class="main-content">
@@ -305,9 +333,13 @@
                         <i class="fas fa-cloud-upload-alt"></i>
                     </div>
                     <div class="upload-text">Click to upload or drag and drop your document</div>
-                    <div class="upload-hint">Supports PNG, JPG, JPEG, GIF, BMP, TIFF, HEIC, HEIF (max 16MB)</div>
+                    <div class="upload-hint">
+                        Supports Images (PNG, JPG, JPEG, GIF, BMP, TIFF, HEIC, HEIF), 
+                        PDF Documents, and Word Documents (DOC, DOCX) - max 50MB
+                    </div>
                 </div>
-                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <input type="file" id="fileInput" class="file-input" 
+                       accept="image/*,.pdf,.doc,.docx">
                 
                 <div class="document-type-selector">
                     <div class="radio-group">
@@ -336,6 +368,9 @@
             <div id="loadingSection" class="loading" style="display: none;">
                 <div class="spinner"></div>
                 <p>Analyzing document... Please wait</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    PDF and document conversion may take longer
+                </p>
             </div>
 
             <div id="errorSection" style="display: none;">
@@ -354,6 +389,17 @@
     <script>
         let selectedFile = null;
 
+        function getFileTypeIndicator(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            if (ext === 'pdf') {
+                return '<span class="file-type-indicator pdf-file">PDF</span>';
+            } else if (['doc', 'docx'].includes(ext)) {
+                return '<span class="file-type-indicator doc-file">DOC</span>';
+            } else {
+                return '<span class="file-type-indicator image-file">IMG</span>';
+            }
+        }
+
         // File input change handler
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -365,9 +411,11 @@
                 const uploadZone = document.querySelector('.upload-zone');
                 uploadZone.innerHTML = `
                     <div class="upload-icon">
-                        <i class="fas fa-file-image"></i>
+                        <i class="fas fa-file-alt"></i>
                     </div>
-                    <div class="upload-text">Selected: ${file.name}</div>
+                    <div class="upload-text">
+                        Selected: ${file.name} ${getFileTypeIndicator(file.name)}
+                    </div>
                     <div class="upload-hint">Click to select a different file</div>
                 `;
             }
@@ -396,7 +444,15 @@
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 const file = files[0];
-                if (file.type.startsWith('image/')) {
+                // Check if file type is allowed
+                const allowedTypes = [
+                    'image/', 'application/pdf', 
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ];
+                
+                if (allowedTypes.some(type => file.type.startsWith(type)) || 
+                    ['pdf', 'doc', 'docx'].includes(file.name.toLowerCase().split('.').pop())) {
                     selectedFile = file;
                     document.getElementById('fileInput').files = files;
                     document.getElementById('verifyBtn').disabled = false;
@@ -404,11 +460,15 @@
                     const uploadZone = document.querySelector('.upload-zone');
                     uploadZone.innerHTML = `
                         <div class="upload-icon">
-                            <i class="fas fa-file-image"></i>
+                            <i class="fas fa-file-alt"></i>
                         </div>
-                        <div class="upload-text">Selected: ${file.name}</div>
+                        <div class="upload-text">
+                            Selected: ${file.name} ${getFileTypeIndicator(file.name)}
+                        </div>
                         <div class="upload-hint">Click to select a different file</div>
                     `;
+                } else {
+                    alert('Please select a valid file type (images, PDF, or Word documents)');
                 }
             }
         });
@@ -456,6 +516,21 @@
         function displayResults(data) {
             const resultsSection = document.getElementById('resultsSection');
             let html = '';
+
+            // Show file processing info
+            if (data.file_category) {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <i class="fas fa-info-circle result-icon info"></i>
+                            <div>
+                                <h3>File Processing Summary</h3>
+                                <p>Processed ${data.file_category} file with ${data.pages_processed || 1} page(s)</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             if (data.detected_type) {
                 html += `
