@@ -3,6 +3,7 @@ import os
 import uuid
 import tempfile
 import logging
+import shutil
 
 from werkzeug.utils import secure_filename
 import json
@@ -21,7 +22,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'change-in-prod'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['RESULTS_FOLDER'] = 'results'
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Increased to 50MB for PDFs
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB for PDFs
 
 # Updated allowed file extensions to include documents
 ALLOWED_EXTENSIONS = {
@@ -34,6 +35,7 @@ ALLOWED_EXTENSIONS = {
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 os.makedirs('static/annotated', exist_ok=True)
+os.makedirs('static/original', exist_ok=True)  # For original images
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -98,6 +100,14 @@ def verify_document():
         
         results = {}
         
+        # Save original images (without bounding boxes) for display
+        original_images = []
+        for i, img_path in enumerate(image_paths):
+            original_filename = f"{unique_filename}_original_{i}.png"
+            original_path = f"static/original/{original_filename}"
+            shutil.copy2(img_path, original_path)
+            original_images.append(f"/static/original/{original_filename}")
+        
         # Process each image through verification
         if document_type == 'kenyan_id' or document_type == 'auto':
             # Analyze as Kenyan ID
@@ -138,6 +148,7 @@ def verify_document():
             annotated_files.append(f"/static/annotated/{unique_filename}_ocr_boxes.png")
         
         results['annotated_images'] = annotated_files
+        results['original_images'] = original_images
         results['timestamp'] = datetime.now().isoformat()
         results['original_filename'] = filename
         results['file_category'] = file_category
