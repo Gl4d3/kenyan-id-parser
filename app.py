@@ -10,9 +10,9 @@ import json
 from datetime import datetime
 
 # Import your verification scripts
-from kenyan_id_verification import analyze_kenyan_ids
+from vision_ai.sample_app.scripts.kenyan_id_verification import analyze_kenyan_ids
 from kra_pin_verification import detect_kra_pin_document
-from document_converter import DocumentConverter
+from vision_ai.sample_app.scripts.document_converter import DocumentConverter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
